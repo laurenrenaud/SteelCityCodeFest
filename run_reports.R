@@ -100,11 +100,11 @@ testingDates <- muni.data %>%
 # flog.threshold(DEBUG, name="log")
 
 
-generateReport <- function(month, municipality, property, codeEnforcement, codeDetail){
+generateReport <- function(disasterid, locationid, property, codeEnforcement, codeDetail){
   #' Generates a family report and stores it as the family id with .docx
   #' appended in the /output directory.
-  #' @param month          string of month plus year of report
-  #' @param municipality     municipal name
+  #' @param disasterid     code for particular disaster
+  #' @param locationid     id for specific location
   #' @param property         Property dataframe
   #' @param codeEnforcement   codeEnforcement dataframe
   #' @param codeDetail         codeDetail dataframe
@@ -113,20 +113,20 @@ generateReport <- function(month, municipality, property, codeEnforcement, codeD
   require(dplyr)
   
   # only make the report if it doesn't already exist
-  if(!file.exists(paste("output/", municipality, month, ".pdf", sep=""))){
-    rmarkdown::render("violations_template.rmd",
+  if(!file.exists(paste("output/", disasterid, locationid, ".pdf", sep=""))){
+    rmarkdown::render("template_individual.rmd",
                       #output_format = pdf_document,
-                      output_file = paste(month, "_", municipality, ".pdf", sep=""),
-                      output_dir = paste("ReportOutput/", municipality, sep=""),
+                      output_file = paste(disasterid, "_", locationid, ".pdf", sep=""),
+                      output_dir = paste("ReportOutput/", disasterid, sep=""),
                       runtime = "static",
                       envir = new.env(),
                       intermediates_dir = "temp",
                       params=list(
-                        municipality = municipality,
-                        property = property,
-                        codeEnforcement = codeEnforcement,
-                        codeDetail = codeDetail,
-                        month = month
+                        disasterid = disasterid,
+                        locationid = locationid
+                        #codeEnforcement = codeEnforcement,
+                        #codeDetail = codeDetail,
+                        #month = month
                       )
     )
   }
