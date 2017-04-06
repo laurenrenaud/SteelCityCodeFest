@@ -1,0 +1,143 @@
+---
+title: "Disaster Survey Sheet"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+  pdf_document:
+    pandoc_args: --latex-engine=xelatex
+---
+
+
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
+library(dplyr)
+library(lubridate)
+library(jsonlite)
+library(knitr)
+library(ggplot2)
+library(leaflet)
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+options (scipen=4)
+cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999", "#000000", "#8856a7")
+
+#`r disastername`, 
+```
+
+*Report Date: `r Sys.Date()`*
+
+### Property Information
+
+Name: 
+
+Address:
+
+Municipality:
+
+Zip Code:
+
+County:
+
+Phone:
+
+Type of Applicant or Structure:
+
+Homeowner or Renter:
+
+#### Insurance Infomration
+
+Insurance Agent Name:
+
+Insurance Agent Phone:
+
+Flood Insurance:
+
+### Estimated Disaster Loss Details
+
+```{r loss_table, echo=FALSE, warning=FALSE, message=FALSE}
+# row for each of structure, contents, land and improvements
+# bring in variables for market value, amount damaged by disaster, amount covered by insurance
+structure <- c("Structure", marketvalue_structure, disaster_structure, insurance_structure)
+contents <- c("Contents", marketvalue_contents, disaster_contents, insurance_contents)
+landimprov <- c("Land & Improvements", marketvalue_land, disaster_land, insurance_land)
+
+# bind these
+loss_table <- rbind(structure, contents, landimprov)
+colnames(loss_table) <- c("Area", "MarketValue", "DisasterLoss", "InsuranceCovered")
+
+# calculate amount and percent of uninsured loss
+loss_table$UninsuredLoss <- loss_table$DisasterLoss - loss_table$InsuranceCovered
+loss_table$UninsuredLossPercent <- loss_table$UninsuredLoss / loss_table$MarketValue
+
+kable(loss_table, col.names = c("Market Value", "Disaster Loss", "Covered by Insurance",
+                                "Uninsured Loss", "Uninsured Loss Percentage"))
+
+```
+
+
+### Building Damage
+
+Damage Category: 
+
+```{r damage_bysystem, echo=FALSE, warning=FALSE, message=FALSE}
+foundation <- c("Foundation", damage_foundation)
+floor <- c("Floor", damage_floor)
+exterior <- c("Exterior Walls", damage_exterior)
+roof <- c("Roof", damage_roof)
+interior <- c("Interior Walls", damage_interior)
+plumbing <- c("Plumbing", damage_plumbing)
+heat_ac <- c("Heating / AC", damage_hvac)
+electrical <- c("Electrical", damage_electrical)
+
+systemdamage <- rbind(foundation, floor, exterior, roof, interior, plumbing, heat_ac, electrical)
+colnames(systemdamage) <- c("SystemArea", "PercentDamange")
+kable(systemdamage, col.names = c("System Area", "Percent Damaged"))
+
+# thoughts on section of report
+# Estimated Replacement Cost looks like sum of percent damanged times fair market value of property
+# which is loss_table$MarketValue
+
+```
+
+
+Total % Damanged:`r round(sum(systemdamage$PercentDamange),0)`%
+
+Estimated Replacement Cost: `r (sum(systemdamage$PercentDamange * sum(loss_table$MarketValue))`
+
+Estimated Damage to Contents: `r sum(loss_table$DisasterLoss[loss_table$Area=="Contents"])`
+
+Total Estimated Damange = `r (sum(systemdamage$PercentDamange * sum(loss_table$MarketValue)) + sum(loss_table$DisasterLoss[loss_table$Area=="Contents"])`
+
+### Comments
+
+
+### Assessor
+
+Name of Assessor:
+
+Date:
+
+
+```{r map}
+# map.data <- filter(muni.data, !is.na(Violation), !is.na(lat))
+# leaflet() %>%
+#       # use the CartoDB map for more subdued map tile colors
+#       addProviderTiles("CartoDB.Positron") %>%
+#       setView(lng = -79.8, lat = 40.4212, zoom = 12) %>%
+#       addCircleMarkers(data = map.data,
+#                        lng = ~long, lat = ~lat, 
+#                        popup = paste("Violation:", map.data$Violation,
+#                                      "<br> Initial Date:", map.data$EventDate),
+#                  # the marker clusters gives us a nice visual 
+#                  # effect where when we zoom out points cluster
+#                  # together, and as we zoom in they are pulled apart
+#                  # showing the individual markers.
+#                  #clusterOptions = markerClusterOptions()
+#                  radius = 5,
+#                  stroke = TRUE,
+#                  color = "#323232",
+#                  weight = 3,
+#                  fillColor = "#7fcdbb",
+#                  fillOpacity = 0.7
+#                  ) 
+```
+

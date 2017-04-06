@@ -25,61 +25,9 @@ library(lubridate)
 #property <- dbGetQuery(conn, "SELECT * FROM tblProperty")
 
 # pulling in CSVs ------
-codeDetail <- read.csv("data/tblCodeEnforcement-Detail.csv", header=TRUE, sep=",")
-codeEnforcement <- read.csv("data/tblCodeEnforcement.csv", header=TRUE, sep=",")
-property <- read.csv("data/tblProperty.csv", header=TRUE, sep=",")
-rentalPermit <- read.csv("data/tblRentalPermit.csv", header=TRUE, sep=",")
-codeDescription <- read.csv("data/tblIssueCode.csv", header=TRUE, sep=",", fileEncoding="LATIN1")
-muni.codes <- fromJSON("data/municode.json")
-convert <- read.csv("data/parcels_xy_only.csv", header=TRUE)
+field_data <- read.csv("data/tblCodeEnforcement-Detail.csv", header=TRUE, sep=",")
 
 # data cleaning -----
-
-
-# generate necessary time variables -----
-reportMonthDate <- floor_date(Sys.Date(), "month") - months(4)
-yearMonthChar <- format(reportMonthDate, "%Y-%m")
-monthName <- month.abb[month(reportMonthDate)]
-yearChar <- as.character(year(reportMonthDate))
-
-
-# Join dataframes ----
-report.data 
-# 
-# # all closed cases
-# closed <- muni.data %>%
-#   group_by(EventID) %>%
-#   filter(all(Resolved.[EventDate==max(EventDate)]))
-# 
-# # open cases
-# open <- muni.data %>%
-#   group_by(EventID) %>%
-#   filter(any(!Resolved.[EventDate==max(EventDate)]))
-# 
-# # NA cases
-# na.cases <- muni.data %>%
-#   group_by(EventID) %>%
-#   filter(any(is.na(Resolved.[EventDate==max(EventDate)])))
-# 
-# # this month's cases
-# nextMonth <- reportMonthDate + months(1)
-# monthCases <- muni.data %>%
-#   group_by(EventID) %>%
-#   filter(min(EventDate) > reportMonthDate, min(EventDate) < nextMonth)
-# 
-# monthOpen <- monthCases %>%
-#   group_by(EventID) %>%
-#   filter(any(!Resolved.[EventDate==max(EventDate)]))
-# 
-# monthClosed <- monthCases %>%
-#   group_by(EventID) %>%
-#   filter(all(Resolved.[EventDate==max(EventDate)]))
-# 
-# muni.year <- muni.data %>%
-#   # first group by EventID and filter by the first (min) EventDate for a given 
-#   # EventID is within the past year
-#   group_by(EventID) %>%
-#   filter(min(EventDate) > (reportMonthDate - months(12)))
 
 #### DATA INTERPRETATION PROBLEM
 ## It appears that EventDate is the date a case was opened
@@ -89,8 +37,8 @@ report.data
 ## follow visits
 ## dataframe below is for figuring out differnce between
 ## ComplianceDate, DateResolved, and how they connect to EventDate
-testingDates <- muni.data %>%
-  select(EventID, EventDate, ComplianceDate, DateResolved, OverallStatus)
+# testingDates <- muni.data %>%
+#   select(EventID, EventDate, ComplianceDate, DateResolved, OverallStatus)
 
 # # close the connection
 # RPostgreSQL::postgresqlCloseConnection(conn)
@@ -100,14 +48,14 @@ testingDates <- muni.data %>%
 # flog.threshold(DEBUG, name="log")
 
 
-generateReport <- function(disasterid, locationid, property, codeEnforcement, codeDetail){
-  #' Generates a family report and stores it as the family id with .docx
-  #' appended in the /output directory.
+# Generate reports -------
+
+generateReport <- function(disasterid, locationid, field_data){
+  #' Generates a report and stores it as the location with .pdf
+  #' appended in the /output directory for that disaster id.
   #' @param disasterid     code for particular disaster
   #' @param locationid     id for specific location
-  #' @param property         Property dataframe
-  #' @param codeEnforcement   codeEnforcement dataframe
-  #' @param codeDetail         codeDetail dataframe
+  #' @param field_data      data input from field via app
   require(lubridate)
   require(rmarkdown)
   require(dplyr)
@@ -123,28 +71,25 @@ generateReport <- function(disasterid, locationid, property, codeEnforcement, co
                       intermediates_dir = "temp",
                       params=list(
                         disasterid = disasterid,
-                        locationid = locationid
-                        #codeEnforcement = codeEnforcement,
-                        #codeDetail = codeDetail,
-                        #month = month
+                        locationid = locationid,
+                        field_data = field_data
                       )
     )
   }
 }
 
 
-makeAllReports <- function(month, muniname, property, codeEnforcement, codeDetail){
-  #' Calls generateReport for each family that is eligable to recieve a report.
-  #' @param month          string of month plus year of report
-  #' @param municipality    municipal name
-  #' @param property         Property dataframe
-  #' @param codeEnforcement   codeEnforcement dataframe
-  #' @param codeDetail         codeDetail dataframe
+makeAllReports <- function(disasterid, locationid, field_data){
+  #' Calls generateReport for each location
+  #' @param disasterid     code for particular disaster
+  #' @param locationid     id for specific location
+  #' @param field_data      data input from field via app
   
   for(municipality in muni.codes$muniname){
-    generateReport(month, municipality, property, codeEnforcement, codeDetail)
+    generateReport(disasterid, locationid, field_data)
   }
 }
 
 # make all reports
+###### NEED TO FIGURE OUT HOW TO RUN FOR THIS DISASTER, NOT PRIOR?
 makeAllReports(yearMonthChar, muniname, property, codeEnforcement, codeDetail)
