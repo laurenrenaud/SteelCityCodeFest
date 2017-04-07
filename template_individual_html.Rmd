@@ -139,6 +139,18 @@ kable(systemdamage, col.names = c("System Area", "Percent Damaged"), row.names=F
 **Date:** `r field_data$date[id=report_id]`
 
 
+### Photos
+
+```{r photo1, out.width = "400px"}
+knitr::include_graphics("photos/cevisit.jpg")
+```
+
+```{r photo2, out.width = "400px"}
+knitr::include_graphics("photos/ceVisit5.jpg")
+```
+
+
+
 ```{r map}
 # map.data <- filter(muni.data, !is.na(Violation), !is.na(lat))
 # leaflet() %>%

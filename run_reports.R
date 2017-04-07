@@ -185,7 +185,7 @@ recent_disaster <- unique(field_data$disaster_id[field_data$date == max(field_da
 # currently taking 'recent_disaster' as parameter
 # but could take any vector of disaster IDs to generate reports
 
-makeAllReports(15, field_data)
+makeAllReports(recent_disaster, field_data)
 
 
 
