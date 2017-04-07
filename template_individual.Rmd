@@ -20,6 +20,9 @@ knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
 options (scipen=4)
 cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999", "#000000", "#8856a7")
 
+###### FOR TESTING #####
+field_data <- read.csv("MOCK_DATA.csv", header=TRUE, sep=",")
+report_id = 27
 #`r disastername`, 
 ```
 
@@ -27,70 +30,88 @@ cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00",
 
 ### Property Information
 
-Name: 
+Name: `r field_data$name_property_owner[id=report_id]`
 
-Address:
+Address: `r field_data$street_address[id=report_id]`
 
-Municipality:
+Municipality: `r field_data$city[id=report_id]`
 
-Zip Code:
+Zip Code: `r field_data$zip_code[id=report_id]`
 
-County:
+County: `r field_data$county[id=report_id]`
 
-Phone:
+Phone: `r field_data$phone_number[id=report_id]`
 
-Type of Applicant or Structure:
+Type of Applicant or Structure: `r field_data$property_type[id=report_id]`
 
-Homeowner or Renter:
+Homeowner or Renter: `r field_data$owner_type[id=report_id]`
 
-#### Insurance Infomration
+#### Insurance Information
 
-Insurance Agent Name:
+Insurance Agent Name: `r field_data$name_insurance[id=report_id]`
 
-Insurance Agent Phone:
+Insurance Agent Phone: `r field_data$phone_insurance[id=report_id]`
 
-Flood Insurance:
+Flood Insurance: `r field_data$flood_insurance[id=report_id]`
 
 ### Estimated Disaster Loss Details
 
 ```{r loss_table, echo=FALSE, warning=FALSE, message=FALSE}
 # row for each of structure, contents, land and improvements
 # bring in variables for market value, amount damaged by disaster, amount covered by insurance
-structure <- c("Structure", marketvalue_structure, disaster_structure, insurance_structure)
-contents <- c("Contents", marketvalue_contents, disaster_contents, insurance_contents)
-landimprov <- c("Land & Improvements", marketvalue_land, disaster_land, insurance_land)
+structure <- data.frame("Structure", field_data$marketvalue_structure[id=report_id],
+               field_data$disaster_structure[id=report_id], 
+               field_data$insurance_structure[id=report_id])
+colnames(structure) <- c("Area", "MarketValue", "DisasterLoss", "InsuranceCovered")
+contents <- data.frame("Contents", field_data$marketvalue_contents[id=report_id], 
+              field_data$disaster_contents[id=report_id], 
+              field_data$insurance_contents[id=report_id])
+colnames(contents) <- c("Area", "MarketValue", "DisasterLoss", "InsuranceCovered")
+landimprov <- data.frame("Land & Improvements", field_data$marketvalue_land[id=report_id], 
+                field_data$disaster_land[id=report_id], 
+                field_data$insurance_land[id=report_id])
+colnames(landimprov) <- c("Area", "MarketValue", "DisasterLoss", "InsuranceCovered")
 
 # bind these
 loss_table <- rbind(structure, contents, landimprov)
-colnames(loss_table) <- c("Area", "MarketValue", "DisasterLoss", "InsuranceCovered")
 
 # calculate amount and percent of uninsured loss
 loss_table$UninsuredLoss <- loss_table$DisasterLoss - loss_table$InsuranceCovered
 loss_table$UninsuredLossPercent <- loss_table$UninsuredLoss / loss_table$MarketValue
 
-kable(loss_table, col.names = c("Market Value", "Disaster Loss", "Covered by Insurance",
-                                "Uninsured Loss", "Uninsured Loss Percentage"))
+kable(loss_table, col.names = c("Area", "Market Value", "Disaster Loss", "Covered by Insurance",
+                                "Uninsured Loss", "Uninsured Loss Percentage"),
+      row.names = F)
 
 ```
 
 
 ### Building Damage
 
-Damage Category: 
+Damage Category: **`r field_data$damage_category[id=report_id]`**
 
 ```{r damage_bysystem, echo=FALSE, warning=FALSE, message=FALSE}
-foundation <- c("Foundation", damage_foundation)
-floor <- c("Floor", damage_floor)
-exterior <- c("Exterior Walls", damage_exterior)
-roof <- c("Roof", damage_roof)
-interior <- c("Interior Walls", damage_interior)
-plumbing <- c("Plumbing", damage_plumbing)
-heat_ac <- c("Heating / AC", damage_hvac)
-electrical <- c("Electrical", damage_electrical)
+foundation <- data.frame("Foundation", field_data$damage_foundation[id=report_id])
+colnames(foundation) <- c("Area", "PercentDamange")
+floor <- data.frame("Floor", field_data$damage_floor[id=report_id])
+colnames(floor) <- c("Area", "PercentDamange")
+exterior <- data.frame("Exterior Walls", field_data$damage_exterior[id=report_id])
+colnames(exterior) <- c("Area", "PercentDamange")
+roof <- data.frame("Roof", field_data$damage_roof[id=report_id])
+colnames(roof) <- c("Area", "PercentDamange")
+interior <- data.frame("Interior Walls", field_data$damage_interior[id=report_id])
+colnames(interior) <- c("Area", "PercentDamange")
+plumbing <- data.frame("Plumbing", field_data$damage_plumbing[id=report_id])
+colnames(plumbing) <- c("Area", "PercentDamange")
+heat_ac <- data.frame("Heating / AC", field_data$damage_hvac[id=report_id])
+colnames(heat_ac) <- c("Area", "PercentDamange")
+electrical <- data.frame("Electrical", field_data$damage_electrical[id=report_id])
+colnames(electrical) <- c("Area", "PercentDamange")
 
 systemdamage <- rbind(foundation, floor, exterior, roof, interior, plumbing, heat_ac, electrical)
 colnames(systemdamage) <- c("SystemArea", "PercentDamange")
-kable(systemdamage, col.names = c("System Area", "Percent Damaged"))
+kable(systemdamage, col.names = c("System Area", "Percent Damaged"), row.names=F)
+
 
 # thoughts on section of report
 # Estimated Replacement Cost looks like sum of percent damanged times fair market value of property
@@ -99,22 +120,23 @@ kable(systemdamage, col.names = c("System Area", "Percent Damaged"))
 ```
 
 
-Total % Damanged:`r round(sum(systemdamage$PercentDamange),0)`%
+Total % Damaged: `r round(sum(systemdamage$PercentDamange)*100,0)`%
 
-Estimated Replacement Cost: `r (sum(systemdamage$PercentDamange * sum(loss_table$MarketValue))`
+Estimated Replacement Cost: $ `r (sum(systemdamage$PercentDamange * sum(loss_table$MarketValue)))`
 
-Estimated Damage to Contents: `r sum(loss_table$DisasterLoss[loss_table$Area=="Contents"])`
+Estimated Damage to Contents: $ `r sum(loss_table$DisasterLoss[loss_table$Area=="Contents"])`
 
-Total Estimated Damange = `r (sum(systemdamage$PercentDamange * sum(loss_table$MarketValue)) + sum(loss_table$DisasterLoss[loss_table$Area=="Contents"])`
+Total Estimated Damange = $ `r (sum(systemdamage$PercentDamange * sum(loss_table$MarketValue)) + sum(loss_table$DisasterLoss[loss_table$Area=="Contents"]))`
 
 ### Comments
 
+`r field_data$comments[id=report_id]`
 
 ### Assessor
 
-Name of Assessor:
+Name of Assessor: `r field_data$name_of_assessor[id=report_id]`
 
-Date:
+Date: `r field_data$date[id=report_id]`
 
 
 ```{r map}

@@ -25,7 +25,7 @@ library(lubridate)
 #property <- dbGetQuery(conn, "SELECT * FROM tblProperty")
 
 # pulling in CSVs ------
-field_data <- read.csv("data/tblCodeEnforcement-Detail.csv", header=TRUE, sep=",")
+field_data <- read.csv("MOCK_DATA.csv", header=TRUE, sep=",")
 
 # data cleaning -----
 
@@ -61,10 +61,10 @@ generateReport <- function(disasterid, locationid, field_data){
   require(dplyr)
   
   # only make the report if it doesn't already exist
-  if(!file.exists(paste("output/", disasterid, locationid, ".pdf", sep=""))){
+  if(!file.exists(paste("output/", disasterid, locationid, ".html", sep=""))){
     rmarkdown::render("template_individual.rmd",
                       #output_format = pdf_document,
-                      output_file = paste(disasterid, "_", locationid, ".pdf", sep=""),
+                      output_file = paste(disasterid, "_", locationid, ".html", sep=""),
                       output_dir = paste("ReportOutput/", disasterid, sep=""),
                       runtime = "static",
                       envir = new.env(),
@@ -85,11 +85,11 @@ makeAllReports <- function(disasterid, locationid, field_data){
   #' @param locationid     id for specific location
   #' @param field_data      data input from field via app
   
-  for(municipality in muni.codes$muniname){
+  for(reportid in field_data$id){
     generateReport(disasterid, locationid, field_data)
   }
 }
 
 # make all reports
 ###### NEED TO FIGURE OUT HOW TO RUN FOR THIS DISASTER, NOT PRIOR?
-makeAllReports(yearMonthChar, muniname, property, codeEnforcement, codeDetail)
+makeAllReports(disasterid, locationid, field_data)
