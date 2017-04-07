@@ -1,9 +1,6 @@
 ---
 title: "Disaster Survey Sheet"
 output:
-  html_document:
-    toc: true
-    toc_depth: 3
   pdf_document:
     pandoc_args: --latex-engine=xelatex
 ---
@@ -21,9 +18,10 @@ options (scipen=4)
 cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999", "#000000", "#8856a7")
 
 ###### FOR TESTING #####
-field_data <- read.csv("MOCK_DATA.csv", header=TRUE, sep=",")
-report_id <- 33
-#`r disastername`, 
+field_data <- readr::read_csv("Codefest Data.csv")
+#report_id <- 33
+#`r disastername`,
+report_id <- 7
 ```
 
 *Report Date: `r Sys.Date()`*
@@ -77,11 +75,11 @@ loss_table <- rbind(structure, contents, landimprov)
 
 # calculate amount and percent of uninsured loss
 loss_table$UninsuredLoss <- loss_table$DisasterLoss - loss_table$InsuranceCovered
-loss_table$UninsuredLossPercent <- loss_table$UninsuredLoss / loss_table$MarketValue
+loss_table$UninsuredLossPercent <- paste(round(loss_table$UninsuredLoss / loss_table$MarketValue*100, 2), "%")
 
 kable(loss_table, col.names = c("Area", "Market Value", "Disaster Loss", "Covered by Insurance",
-                                "Uninsured Loss", "Uninsured Loss Percentage"),
-      row.names = F)
+                                "Uninsured Loss", "Uninsured Loss %"),
+      align=c(rep("r", 6)), row.names = F, format.args=list(big.mark = ','))
 
 ```
 
@@ -97,8 +95,8 @@ floor <- data.frame("Floor", field_data$damage_floor[id=report_id])
 colnames(floor) <- c("Area", "PercentDamange")
 exterior <- data.frame("Exterior Walls", field_data$damage_exterior[id=report_id])
 colnames(exterior) <- c("Area", "PercentDamange")
-roof <- data.frame("Roof", field_data$damage_roof[id=report_id])
-colnames(roof) <- c("Area", "PercentDamange")
+#roof <- data.frame("Roof", field_data$damage_roof[id=report_id])
+#colnames(roof) <- c("Area", "PercentDamange")
 interior <- data.frame("Interior Walls", field_data$damage_interior[id=report_id])
 colnames(interior) <- c("Area", "PercentDamange")
 plumbing <- data.frame("Plumbing", field_data$damage_plumbing[id=report_id])
@@ -108,25 +106,20 @@ colnames(heat_ac) <- c("Area", "PercentDamange")
 electrical <- data.frame("Electrical", field_data$damage_electrical[id=report_id])
 colnames(electrical) <- c("Area", "PercentDamange")
 
-systemdamage <- rbind(foundation, floor, exterior, roof, interior, plumbing, heat_ac, electrical)
+systemdamage <- rbind(foundation, floor, exterior, interior, plumbing, heat_ac, electrical)
 colnames(systemdamage) <- c("SystemArea", "PercentDamange")
 kable(systemdamage, col.names = c("System Area", "Percent Damaged"), row.names=F)
-
-
-# thoughts on section of report
-# Estimated Replacement Cost looks like sum of percent damanged times fair market value of property
-# which is loss_table$MarketValue
 
 ```
 
 
-**Total % Damaged:** `r round(sum(systemdamage$PercentDamange)*100,0)`%
+**Total % Damaged:** `r round(sum(systemdamage$PercentDamange),0)`%
 
-**Estimated Replacement Cost:** $ `r (sum(systemdamage$PercentDamange * sum(loss_table$MarketValue)))`
+**Estimated Replacement Cost:** $ `r format((sum(systemdamage$PercentDamange * sum(loss_table$MarketValue))), big.mark = ",")`
 
-**Estimated Damage to Contents:** $ `r sum(loss_table$DisasterLoss[loss_table$Area=="Contents"])`
+**Estimated Damage to Contents:** $ `r format(sum(loss_table$DisasterLoss[loss_table$Area=="Contents"]), big.mark=",")`
 
-**Total Estimated Damange:** $ `r (sum(systemdamage$PercentDamange * sum(loss_table$MarketValue)) + sum(loss_table$DisasterLoss[loss_table$Area=="Contents"]))`
+**Total Estimated Damange:** $ `r format((sum(systemdamage$PercentDamange * sum(loss_table$MarketValue)) + sum(loss_table$DisasterLoss[loss_table$Area=="Contents"])), big.mark=",")`
 
 ### Comments
 
@@ -137,17 +130,6 @@ kable(systemdamage, col.names = c("System Area", "Percent Damaged"), row.names=F
 **Name of Assessor:** `r field_data$name_of_assessor[id=report_id]`
 
 **Date:** `r field_data$date[id=report_id]`
-
-### test
-
-```{r testing, echo=FALSE, warning=FALSE, message=FALSE}
-col1 <- paste(field_data$name_property_owner[field_data$id==report_id], 
-          field_data$street_address[field_data$id==report_id],
-          field_data$phone_number[field_data$id==report_id],
-          sep="<br>")
-```
-          
-`r col1`
 
 
 ```{r map}
