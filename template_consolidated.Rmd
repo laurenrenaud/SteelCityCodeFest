@@ -1,0 +1,88 @@
+---
+title: "Consolidated Report"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+  pdf_document:
+    pandoc_args: --latex-engine=xelatex
+---
+
+
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
+library(dplyr)
+library(lubridate)
+library(knitr)
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+options (scipen=4)
+cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999", "#000000", "#8856a7")
+
+###### FOR TESTING #####
+field_data <- read.csv("MOCK_DATA.csv", header=TRUE, sep=",")
+report_id <- 33
+#`r disastername`, 
+```
+
+**Report Date:** `r Sys.Date()`
+
+**Disaster ID:** 
+
+```{r with_loop, echo=FALSE, warning=FALSE, message=FALSE}
+
+consolidateReport <- function(field_data, reportlist) {
+  out <- NULL  # Define output variable
+  
+  # Generate summary for each variable
+  for(locationid in reportlist) {
+    
+    structure <- data.frame(" ", " ", "Structure", field_data$marketvalue_structure[id=locationid],
+               field_data$disaster_structure[id=locationid], 
+               field_data$insurance_structure[id=locationid])
+    colnames(structure) <- c("PropInfo", "TypeInfo", "Area", "MarketValue", "DisasterLoss", "InsuranceCovered")
+    contents <- data.frame(" ", " ", "Contents", field_data$marketvalue_contents[id=locationid], 
+              field_data$disaster_contents[id=locationid], 
+              field_data$insurance_contents[id=locationid])
+    colnames(contents) <- c("PropInfo", "TypeInfo", "Area", "MarketValue", "DisasterLoss", "InsuranceCovered")
+    landimprov <- data.frame(" ", " ", "Land & Improvements", field_data$marketvalue_land[id=locationid], 
+                field_data$disaster_land[id=locationid], 
+                field_data$insurance_land[id=locationid])
+    colnames(landimprov) <- c("PropInfo", "TypeInfo", "Area", "MarketValue", "DisasterLoss", "InsuranceCovered")
+    
+    # bind these
+    loss_table <- rbind(structure, contents, landimprov)
+    
+    # calculate amount and percent of uninsured loss
+    loss_table$UninsuredLoss <- loss_table$DisasterLoss - loss_table$InsuranceCovered
+    loss_table$UninsuredLossPercent <- round(loss_table$UninsuredLoss / loss_table$MarketValue*100,1)
+    loss_table$PropInfo <- as.character(loss_table$PropInfo)
+    loss_table$PropInfo[1] <- paste(field_data$name_property_owner[field_data$id==locationid], 
+                              field_data$street_address[field_data$id==locationid],
+                              field_data$phone_number[field_data$id==locationid],
+                              sep="<br>")
+    loss_table$TypeInfo <- as.character(loss_table$TypeInfo)
+    loss_table$TypeInfo[1] <-  paste(field_data$home_type[field_data$id==locationid], 
+                              field_data$owner_type[field_data$id==locationid],
+                              sep="<br>")
+    
+    # If summary is non-null, add it to the output table
+    if(!is.null(loss_table)) {
+      out <- rbind(out, loss_table)
+    }
+  }
+  return(out)
+}
+
+reportlist <- c(24:28)
+
+consolidated_table <- consolidateReport(field_data, reportlist)
+
+consolidated_table <- rbind(consolidated_table,
+                      c(" ", " ", " ", " ", " ", " ", " ", " "),
+                      c(" ", "**Totals**", " ", colSums(consolidated_table[,4:7]), " "))
+
+kable(consolidated_table, align = c("l", "l", "r", "r", "r", "r", "r", "r"),
+      col.names = c("Property <br>Info", "Occupant <br>Info", "Area", "Market <br>Value", "Disaster <br>Loss",
+                    "Insurance <br>Covered", "Unisured <br>Loss", "Uninsured <br>Loss %"),
+      format.args=list(big.mark = ','))
+
+```

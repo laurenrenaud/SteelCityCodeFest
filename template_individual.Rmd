@@ -22,7 +22,7 @@ cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00",
 
 ###### FOR TESTING #####
 field_data <- read.csv("MOCK_DATA.csv", header=TRUE, sep=",")
-report_id = 27
+report_id <- 33
 #`r disastername`, 
 ```
 
@@ -30,29 +30,29 @@ report_id = 27
 
 ### Property Information
 
-Name: `r field_data$name_property_owner[id=report_id]`
+**Name:** `r field_data$name_property_owner[id=report_id]`
 
-Address: `r field_data$street_address[id=report_id]`
+**Address:** `r field_data$street_address[id=report_id]`
 
-Municipality: `r field_data$city[id=report_id]`
+**Municipality:** `r field_data$city[id=report_id]`
 
-Zip Code: `r field_data$zip_code[id=report_id]`
+**Zip Code:** `r field_data$zip_code[id=report_id]`
 
-County: `r field_data$county[id=report_id]`
+**County:** `r field_data$county[id=report_id]`
 
-Phone: `r field_data$phone_number[id=report_id]`
+**Phone:** `r field_data$phone_number[id=report_id]`
 
-Type of Applicant or Structure: `r field_data$property_type[id=report_id]`
+**Type of Applicant or Structure:** `r field_data$property_type[id=report_id]`
 
-Homeowner or Renter: `r field_data$owner_type[id=report_id]`
+**Homeowner or Renter:** `r field_data$owner_type[id=report_id]`
 
-#### Insurance Information
+### Insurance Information
 
-Insurance Agent Name: `r field_data$name_insurance[id=report_id]`
+**Insurance Agent Name:** `r field_data$name_insurance[id=report_id]`
 
-Insurance Agent Phone: `r field_data$phone_insurance[id=report_id]`
+**Insurance Agent Phone:** `r field_data$phone_insurance[id=report_id]`
 
-Flood Insurance: `r field_data$flood_insurance[id=report_id]`
+**Flood Insurance:** `r field_data$flood_insurance[id=report_id]`
 
 ### Estimated Disaster Loss Details
 
@@ -88,7 +88,7 @@ kable(loss_table, col.names = c("Area", "Market Value", "Disaster Loss", "Covere
 
 ### Building Damage
 
-Damage Category: **`r field_data$damage_category[id=report_id]`**
+**Damage Category:** `r field_data$damage_category[id=report_id]`
 
 ```{r damage_bysystem, echo=FALSE, warning=FALSE, message=FALSE}
 foundation <- data.frame("Foundation", field_data$damage_foundation[id=report_id])
@@ -120,13 +120,13 @@ kable(systemdamage, col.names = c("System Area", "Percent Damaged"), row.names=F
 ```
 
 
-Total % Damaged: `r round(sum(systemdamage$PercentDamange)*100,0)`%
+**Total % Damaged:** `r round(sum(systemdamage$PercentDamange)*100,0)`%
 
-Estimated Replacement Cost: $ `r (sum(systemdamage$PercentDamange * sum(loss_table$MarketValue)))`
+**Estimated Replacement Cost:** $ `r (sum(systemdamage$PercentDamange * sum(loss_table$MarketValue)))`
 
-Estimated Damage to Contents: $ `r sum(loss_table$DisasterLoss[loss_table$Area=="Contents"])`
+**Estimated Damage to Contents:** $ `r sum(loss_table$DisasterLoss[loss_table$Area=="Contents"])`
 
-Total Estimated Damange = $ `r (sum(systemdamage$PercentDamange * sum(loss_table$MarketValue)) + sum(loss_table$DisasterLoss[loss_table$Area=="Contents"]))`
+**Total Estimated Damange:** $ `r (sum(systemdamage$PercentDamange * sum(loss_table$MarketValue)) + sum(loss_table$DisasterLoss[loss_table$Area=="Contents"]))`
 
 ### Comments
 
@@ -134,9 +134,20 @@ Total Estimated Damange = $ `r (sum(systemdamage$PercentDamange * sum(loss_table
 
 ### Assessor
 
-Name of Assessor: `r field_data$name_of_assessor[id=report_id]`
+**Name of Assessor:** `r field_data$name_of_assessor[id=report_id]`
 
-Date: `r field_data$date[id=report_id]`
+**Date:** `r field_data$date[id=report_id]`
+
+### test
+
+```{r testing, echo=FALSE, warning=FALSE, message=FALSE}
+col1 <- paste(field_data$name_property_owner[field_data$id==report_id], 
+          field_data$street_address[field_data$id==report_id],
+          field_data$phone_number[field_data$id==report_id],
+          sep="<br>")
+```
+          
+`r col1`
 
 
 ```{r map}

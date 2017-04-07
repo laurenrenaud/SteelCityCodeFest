@@ -1,9 +1,8 @@
-library(RPostgreSQL)
 library(rmarkdown)
-library(futile.logger)
 library(dplyr)
-library(jsonlite)
 library(lubridate)
+#library(RPostgreSQL)
+#library(jsonlite)
 
 # # get a driver
 # drv <- dbDriver("PostgreSQL")
@@ -65,6 +64,7 @@ generateReport <- function(disasterid, locationid, field_data){
     rmarkdown::render("template_individual.rmd",
                       #output_format = pdf_document,
                       output_file = paste(disasterid, "_", locationid, ".html", sep=""),
+                      #output_file = paste(disasterid, "_", locationid, ".pdf", sep=""),
                       output_dir = paste("ReportOutput/", disasterid, sep=""),
                       runtime = "static",
                       envir = new.env(),
@@ -79,17 +79,18 @@ generateReport <- function(disasterid, locationid, field_data){
 }
 
 
-makeAllReports <- function(disasterid, locationid, field_data){
+
+makeAllReports <- function(disasterid_selected, field_data){
   #' Calls generateReport for each location
   #' @param disasterid     code for particular disaster
   #' @param locationid     id for specific location
   #' @param field_data      data input from field via app
   
-  for(reportid in field_data$id){
-    generateReport(disasterid, locationid, field_data)
+  for(id_selected in field_data$id[field_data$disaster_id == disasterid_selected]){
+    generateReport(disasterid = disasterid_selected, locationid = id_selected, field_data)
   }
 }
 
 # make all reports
 ###### NEED TO FIGURE OUT HOW TO RUN FOR THIS DISASTER, NOT PRIOR?
-makeAllReports(disasterid, locationid, field_data)
+makeAllReports(disasterid, field_data)
