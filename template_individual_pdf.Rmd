@@ -1,0 +1,158 @@
+---
+title: "Disaster Survey Sheet"
+output:
+  pdf_document:
+    pandoc_args: --latex-engine=xelatex
+---
+
+
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
+library(dplyr)
+library(lubridate)
+library(jsonlite)
+library(knitr)
+library(ggplot2)
+library(leaflet)
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+options (scipen=4)
+cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999", "#000000", "#8856a7")
+
+###### FOR TESTING #####
+#field_data <- readr::read_csv("Codefest Data.csv")
+#report_id <- 33
+#`r disastername`,
+report_id <- locationid
+```
+
+*Report Date: `r Sys.Date()`*
+
+### Property Information
+
+**Name:** `r field_data$name_property_owner[id=report_id]`
+
+**Address:** `r field_data$street_address[id=report_id]`
+
+**Municipality:** `r field_data$city[id=report_id]`
+
+**Zip Code:** `r field_data$zip_code[id=report_id]`
+
+**County:** `r field_data$county[id=report_id]`
+
+**Phone:** `r field_data$phone_number[id=report_id]`
+
+**Type of Applicant or Structure:** `r field_data$property_type[id=report_id]`
+
+**Homeowner or Renter:** `r field_data$owner_type[id=report_id]`
+
+### Insurance Information
+
+**Insurance Agent Name:** `r field_data$name_insurance[id=report_id]`
+
+**Insurance Agent Phone:** `r field_data$phone_insurance[id=report_id]`
+
+**Flood Insurance:** `r field_data$flood_insurance[id=report_id]`
+
+### Estimated Disaster Loss Details
+
+```{r loss_table, echo=FALSE, warning=FALSE, message=FALSE}
+# row for each of structure, contents, land and improvements
+# bring in variables for market value, amount damaged by disaster, amount covered by insurance
+structure <- data.frame("Structure", field_data$marketvalue_structure[id=report_id],
+               field_data$disaster_structure[id=report_id], 
+               field_data$insurance_structure[id=report_id])
+colnames(structure) <- c("Area", "MarketValue", "DisasterLoss", "InsuranceCovered")
+contents <- data.frame("Contents", field_data$marketvalue_contents[id=report_id], 
+              field_data$disaster_contents[id=report_id], 
+              field_data$insurance_contents[id=report_id])
+colnames(contents) <- c("Area", "MarketValue", "DisasterLoss", "InsuranceCovered")
+landimprov <- data.frame("Land & Improvements", field_data$marketvalue_land[id=report_id], 
+                field_data$disaster_land[id=report_id], 
+                field_data$insurance_land[id=report_id])
+colnames(landimprov) <- c("Area", "MarketValue", "DisasterLoss", "InsuranceCovered")
+
+# bind these
+loss_table <- rbind(structure, contents, landimprov)
+
+# calculate amount and percent of uninsured loss
+loss_table$UninsuredLoss <- loss_table$DisasterLoss - loss_table$InsuranceCovered
+loss_table$UninsuredLossPercent <- paste(round(loss_table$UninsuredLoss / loss_table$MarketValue*100, 2), "%")
+
+kable(loss_table, col.names = c("Area", "Market Value", "Disaster Loss", "Covered by Insurance",
+                                "Uninsured Loss", "Uninsured Loss %"),
+      align=c(rep("r", 6)), row.names = F, format.args=list(big.mark = ','))
+
+```
+
+
+### Building Damage
+
+**Damage Category:** `r field_data$damage_category[id=report_id]`
+
+```{r damage_bysystem, echo=FALSE, warning=FALSE, message=FALSE}
+foundation <- data.frame("Foundation", field_data$damage_foundation[id=report_id])
+colnames(foundation) <- c("Area", "PercentDamange")
+floor <- data.frame("Floor", field_data$damage_floor[id=report_id])
+colnames(floor) <- c("Area", "PercentDamange")
+exterior <- data.frame("Exterior Walls", field_data$damage_exterior[id=report_id])
+colnames(exterior) <- c("Area", "PercentDamange")
+#roof <- data.frame("Roof", field_data$damage_roof[id=report_id])
+#colnames(roof) <- c("Area", "PercentDamange")
+interior <- data.frame("Interior Walls", field_data$damage_interior[id=report_id])
+colnames(interior) <- c("Area", "PercentDamange")
+plumbing <- data.frame("Plumbing", field_data$damage_plumbing[id=report_id])
+colnames(plumbing) <- c("Area", "PercentDamange")
+heat_ac <- data.frame("Heating / AC", field_data$damage_hvac[id=report_id])
+colnames(heat_ac) <- c("Area", "PercentDamange")
+electrical <- data.frame("Electrical", field_data$damage_electrical[id=report_id])
+colnames(electrical) <- c("Area", "PercentDamange")
+
+systemdamage <- rbind(foundation, floor, exterior, interior, plumbing, heat_ac, electrical)
+colnames(systemdamage) <- c("SystemArea", "PercentDamange")
+kable(systemdamage, col.names = c("System Area", "Percent Damaged"), row.names=F)
+
+```
+
+
+**Total % Damaged:** `r round(sum(systemdamage$PercentDamange),0)`%
+
+**Estimated Replacement Cost:** $ `r format((sum(systemdamage$PercentDamange * sum(loss_table$MarketValue))), big.mark = ",")`
+
+**Estimated Damage to Contents:** $ `r format(sum(loss_table$DisasterLoss[loss_table$Area=="Contents"]), big.mark=",")`
+
+**Total Estimated Damange:** $ `r format((sum(systemdamage$PercentDamange * sum(loss_table$MarketValue)) + sum(loss_table$DisasterLoss[loss_table$Area=="Contents"])), big.mark=",")`
+
+### Comments
+
+`r field_data$comments[id=report_id]`
+
+### Assessor
+
+**Name of Assessor:** `r field_data$name_of_assessor[id=report_id]`
+
+**Date:** `r field_data$date[id=report_id]`
+
+
+```{r map}
+# map.data <- filter(muni.data, !is.na(Violation), !is.na(lat))
+# leaflet() %>%
+#       # use the CartoDB map for more subdued map tile colors
+#       addProviderTiles("CartoDB.Positron") %>%
+#       setView(lng = -79.8, lat = 40.4212, zoom = 12) %>%
+#       addCircleMarkers(data = map.data,
+#                        lng = ~long, lat = ~lat, 
+#                        popup = paste("Violation:", map.data$Violation,
+#                                      "<br> Initial Date:", map.data$EventDate),
+#                  # the marker clusters gives us a nice visual 
+#                  # effect where when we zoom out points cluster
+#                  # together, and as we zoom in they are pulled apart
+#                  # showing the individual markers.
+#                  #clusterOptions = markerClusterOptions()
+#                  radius = 5,
+#                  stroke = TRUE,
+#                  color = "#323232",
+#                  weight = 3,
+#                  fillColor = "#7fcdbb",
+#                  fillOpacity = 0.7
+#                  ) 
+```
+

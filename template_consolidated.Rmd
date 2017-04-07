@@ -18,8 +18,9 @@ options (scipen=4)
 cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999", "#000000", "#8856a7")
 
 ###### FOR TESTING #####
-field_data <- read.csv("MOCK_DATA.csv", header=TRUE, sep=",")
-report_id <- 33
+field_data <- readr::read_csv("Codefest Data.csv")
+report_id <- 12
+#report_id <- locationid
 #`r disastername`, 
 ```
 
@@ -83,6 +84,6 @@ consolidated_table <- rbind(consolidated_table,
 kable(consolidated_table, align = c("l", "l", "r", "r", "r", "r", "r", "r"),
       col.names = c("Property <br>Info", "Occupant <br>Info", "Area", "Market <br>Value", "Disaster <br>Loss",
                     "Insurance <br>Covered", "Unisured <br>Loss", "Uninsured <br>Loss %"),
-      format.args=list(big.mark = ','))
+      format.args=(big.mark = ','))
 
 ```
