@@ -66,6 +66,10 @@ generateReportPDF <- function(disasterid, locationid, field_data){
   #' @param disasterid     code for particular disaster
   #' @param locationid     id for specific location
   #' @param field_data      data input from field via app
+<<<<<<< HEAD
+=======
+  require(lubridate)
+>>>>>>> 6de86908e33e7e9c151ee3787d3c71565fc31055
   require(rmarkdown)
   require(dplyr)
   
@@ -88,6 +92,7 @@ generateReportPDF <- function(disasterid, locationid, field_data){
 }
 
 
+<<<<<<< HEAD
 
 generateConsolidatedReportPDF <- function(disasterid, field_data){
   #' Generates a report and stores it as the location with .pdf
@@ -115,6 +120,8 @@ generateConsolidatedReportPDF <- function(disasterid, field_data){
 }
 
 
+=======
+>>>>>>> 6de86908e33e7e9c151ee3787d3c71565fc31055
 
 makeAllReports <- function(disasterid_selected, field_data){
   #' Calls generateReport for each location

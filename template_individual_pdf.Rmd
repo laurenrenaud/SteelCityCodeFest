@@ -18,10 +18,17 @@ options (scipen=4)
 cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999", "#000000", "#8856a7")
 
 ###### FOR TESTING #####
+<<<<<<< HEAD
 #field_data <- readr::read_csv("Codefest Data.csv")
 #report_id <- 33
 #`r disastername`,
 report_id <- locationid
+=======
+field_data <- readr::read_csv("Codefest Data.csv")
+#report_id <- 33
+#`r disastername`,
+report_id <- 7
+>>>>>>> 6de86908e33e7e9c151ee3787d3c71565fc31055
 ```
 
 *Report Date: `r Sys.Date()`*
