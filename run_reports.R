@@ -43,9 +43,8 @@ generateReportHTML <- function(disasterid, locationid, field_data){
   if(!file.exists(paste("output/", disasterid, locationid, ".html", sep=""))){
     rmarkdown::render("template_individual_html.rmd",
                       #output_format = pdf_document,
-                      output_file = paste("Disaster", disasterid, "_ReportID", locationid, ".html", sep=""),
-                      #output_file = paste(disasterid, "_", locationid, ".pdf", sep=""),
-                      output_dir = paste("ReportOutput/", disasterid, sep=""),
+                      output_file = paste("Report_", locationid, ".html", sep=""),
+                      output_dir = paste("ReportOutput/", locationid, sep=""),
                       runtime = "static",
                       envir = new.env(),
                       intermediates_dir = "temp",
@@ -72,8 +71,8 @@ generateReportPDF <- function(disasterid, locationid, field_data){
   if(!file.exists(paste("output/", disasterid, locationid, ".pdf", sep=""))){
     rmarkdown::render("template_individual_pdf.rmd",
                       #output_format = pdf_document,
-                      output_file = paste("Disaster", disasterid, "_ReportID", locationid, ".pdf", sep=""),
-                      output_dir = paste("ReportOutput/", disasterid, sep=""),
+                      output_file = paste("Report_", locationid, ".pdf", sep=""),
+                      output_dir = paste("ReportOutput/", locationid, sep=""),
                       runtime = "static",
                       envir = new.env(),
                       intermediates_dir = "temp",
@@ -100,7 +99,7 @@ generateConsolidatedReportPDF <- function(disasterid, field_data){
     rmarkdown::render("template_consolidated_pdf.rmd",
                       #output_format = pdf_document,
                       output_file = paste("Consolidated_Disaster", disasterid, ".pdf", sep=""),
-                      output_dir = paste("ReportOutput/", disasterid, sep=""),
+                      output_dir = paste("ConsolidatedOutput/", disasterid, sep=""),
                       runtime = "static",
                       envir = new.env(),
                       intermediates_dir = "temp",
@@ -125,7 +124,7 @@ generateConsolidatedReportHTML <- function(disasterid, field_data){
     rmarkdown::render("template_consolidated_html.rmd",
                       #output_format = pdf_document,
                       output_file = paste("Consolidated_Disaster", disasterid, ".html", sep=""),
-                      output_dir = paste("ReportOutput/", disasterid, sep=""),
+                      output_dir = paste("ConsolidatedOutput/", disasterid, sep=""),
                       runtime = "static",
                       envir = new.env(),
                       intermediates_dir = "temp",
@@ -151,7 +150,7 @@ generateConsolidatedReportPDF <- function(disasterid, field_data){
     rmarkdown::render("template_consolidated_pdf.rmd",
                       #output_format = pdf_document,
                       output_file = paste("Consolidated_Disaster", disasterid, ".pdf", sep=""),
-                      output_dir = paste("ReportOutput/", disasterid, sep=""),
+                      output_dir = paste("ConsolidatedOutput/", disasterid, sep=""),
                       runtime = "static",
                       envir = new.env(),
                       intermediates_dir = "temp",
@@ -182,9 +181,11 @@ makeAllReports <- function(disasterid_selected, field_data){
 # make all reports -------
 
 recent_disaster <- unique(field_data$disaster_id[field_data$date == max(field_data$date)])
+
 # currently taking 'recent_disaster' as parameter
 # but could take any vector of disaster IDs to generate reports
 
-makeAllReports(recent_disaster, field_data)
+makeAllReports(15, field_data)
+
 
 
