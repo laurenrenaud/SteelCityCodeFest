@@ -1,9 +1,6 @@
 ---
 title: "Consolidated Report"
 output:
-  html_document:
-    toc: true
-    toc_depth: 3
   pdf_document:
     pandoc_args: --latex-engine=xelatex
 ---
@@ -18,15 +15,16 @@ options (scipen=4)
 cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999", "#000000", "#8856a7")
 
 ###### FOR TESTING #####
-field_data <- readr::read_csv("Codefest Data.csv")
-report_id <- 12
-#report_id <- locationid
+#field_data <- readr::read_csv("Codefest Data.csv")
+disaster_selected <- disasterid
+
+#disaster_selected <- 1
 #`r disastername`, 
 ```
 
 **Report Date:** `r Sys.Date()`
 
-**Disaster ID:** 
+**Disaster ID:** `r disaster_selected`
 
 ```{r with_loop, echo=FALSE, warning=FALSE, message=FALSE}
 

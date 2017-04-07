@@ -27,7 +27,6 @@ library(readr)
 # pulling in CSVs ------
 field_data <- readr::read_csv("Codefest Data.csv")
 
-recent_disaster <- unique(field_data$disaster_id[field_data$date == max(field_data$date)])
 
 # Generate reports -------
 
@@ -66,10 +65,6 @@ generateReportPDF <- function(disasterid, locationid, field_data){
   #' @param disasterid     code for particular disaster
   #' @param locationid     id for specific location
   #' @param field_data      data input from field via app
-<<<<<<< HEAD
-=======
-  require(lubridate)
->>>>>>> 6de86908e33e7e9c151ee3787d3c71565fc31055
   require(rmarkdown)
   require(dplyr)
   
@@ -92,7 +87,56 @@ generateReportPDF <- function(disasterid, locationid, field_data){
 }
 
 
-<<<<<<< HEAD
+generateConsolidatedReportPDF <- function(disasterid, field_data){
+  #' Generates a report and stores it as the location with .pdf
+  #' appended in the /output directory for that disaster id.
+  #' @param disasterid     code for particular disaster
+  #' @param field_data      data input from field via app
+  require(rmarkdown)
+  require(dplyr)
+  
+  # only make the report if it doesn't already exist
+  if(!file.exists(paste("output/Consolidated_", disasterid, ".pdf", sep=""))){
+    rmarkdown::render("template_consolidated_pdf.rmd",
+                      #output_format = pdf_document,
+                      output_file = paste("Consolidated_Disaster", disasterid, ".pdf", sep=""),
+                      output_dir = paste("ReportOutput/", disasterid, sep=""),
+                      runtime = "static",
+                      envir = new.env(),
+                      intermediates_dir = "temp",
+                      params=list(
+                        disasterid = disasterid,
+                        field_data = field_data
+                      )
+    )
+  }
+}
+
+generateConsolidatedReportHTML <- function(disasterid, field_data){
+  #' Generates a report and stores it as the location with .pdf
+  #' appended in the /output directory for that disaster id.
+  #' @param disasterid     code for particular disaster
+  #' @param field_data      data input from field via app
+  require(rmarkdown)
+  require(dplyr)
+  
+  # only make the report if it doesn't already exist
+  if(!file.exists(paste("output/Consolidated_", disasterid, ".html", sep=""))){
+    rmarkdown::render("template_consolidated_html.rmd",
+                      #output_format = pdf_document,
+                      output_file = paste("Consolidated_Disaster", disasterid, ".html", sep=""),
+                      output_dir = paste("ReportOutput/", disasterid, sep=""),
+                      runtime = "static",
+                      envir = new.env(),
+                      intermediates_dir = "temp",
+                      params=list(
+                        disasterid = disasterid,
+                        field_data = field_data
+                      )
+    )
+  }
+}
+
 
 generateConsolidatedReportPDF <- function(disasterid, field_data){
   #' Generates a report and stores it as the location with .pdf
@@ -104,7 +148,7 @@ generateConsolidatedReportPDF <- function(disasterid, field_data){
   
   # only make the report if it doesn't already exist
   if(!file.exists(paste("output/Consolidated_", disasterid, ".pdf", sep=""))){
-    rmarkdown::render("template_individual_pdf.rmd",
+    rmarkdown::render("template_consolidated_pdf.rmd",
                       #output_format = pdf_document,
                       output_file = paste("Consolidated_Disaster", disasterid, ".pdf", sep=""),
                       output_dir = paste("ReportOutput/", disasterid, sep=""),
@@ -120,9 +164,6 @@ generateConsolidatedReportPDF <- function(disasterid, field_data){
 }
 
 
-=======
->>>>>>> 6de86908e33e7e9c151ee3787d3c71565fc31055
-
 makeAllReports <- function(disasterid_selected, field_data){
   #' Calls generateReport for each location
   #' @param disasterid     code for particular disaster
@@ -132,11 +173,18 @@ makeAllReports <- function(disasterid_selected, field_data){
   for(id_selected in field_data$id[field_data$disaster_id == disasterid_selected]){
     generateReportHTML(disasterid = disasterid_selected, locationid = id_selected, field_data)
     generateReportPDF(disasterid = disasterid_selected, locationid = id_selected, field_data)
+    generateConsolidatedReportHTML(disasterid = disasterid_selected, field_data)
+    # need to improve latex formatting before including PDF
+    #generateConsolidatedReportPDF(disasterid = disasterid_selected, field_data)
   }
 }
 
-# make all reports
+# make all reports -------
+
+recent_disaster <- unique(field_data$disaster_id[field_data$date == max(field_data$date)])
+# currently taking 'recent_disaster' as parameter
+# but could take any vector of disaster IDs to generate reports
+
 makeAllReports(recent_disaster, field_data)
 
-# make consolidated report
 
